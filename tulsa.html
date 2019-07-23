@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Tulsa Map</title>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' rel='stylesheet' />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <style>
+  body {
+    margin:0;
+    padding:0;
+    background-image: url("atlanticns.JPG");
+    background-color: #cccccc; /* Used if the image is unavailable */
+    height: 100%; /* You must set a specified height */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-size: cover; /* Resize the background image to cover the entire container */
+  }
+  .cont{
+    background-color: #07456f;
+    margin-top:12%;
+    margin-left: 25%;
+    margin-right: 25%;
+  }
+  .paragraph{
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    color:white;
+    padding:12px;
+  }
+  #map { position:absolute; width:100%; }
+  .navi{
+    float: right;
+  }
+  </style>
+</head>
+<body>
+  <div class="cont">
+    <p class="paragraph">Tulsa Crime Map</p>
+    <div id='map' style='width: 50%; height: 50%;'></div>
+    <div class="navi">
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Navigation from here
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="../index.html">Go home</a>
+          <a class="dropdown-item" href="boulder.html">Boulder, Colorado</a>
+          <a class="dropdown-item" href="fortlauderdale.html">Fort Lauderdale, Florida</a>
+          <a class="dropdown-item" href="atlantic.html">Halifax, Nova Scotia</a>
+          <a class="dropdown-item" href="henderson.html">Henderson, Nevada</a>
+          <a class="dropdown-item" href="la.html">Los Angeles, California</a>
+          <a class="dropdown-item" href="lynchburg.html">Lynchburg, Virginia</a>
+          <a class="dropdown-item" href="pierce.html">Pierce County, Washington</a>
+          <a class="dropdown-item" href="raleigh.html">Raleigh, North Carolina</a>
+          <a class="dropdown-item" href="sacramento.html">Sacramento, California</a>
+          <a class="dropdown-item" href="tempe.html">Tempe, Arizona</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoidmVkYXRoZWNhcnRvIiwiYSI6ImNqeTZhOThhdDAwemUzb285cDQ2dWI5MzAifQ.QxSoLEhVziJtS_OPp3Uz9g';
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [-95.99, 36.15],
+      zoom: 9
+    });
+
+    map.on('load', function() {
+      // Add a geojson point source.
+      // Heatmap layers also work with a vector tile source.
+      map.addSource('earthquakes', {
+      "type": "geojson",
+      "data": "https://opendata.arcgis.com/datasets/20dfa0c4ed59477895ebbe7ec2e2cf66_4.geojson"
+      });
+
+      map.addLayer({
+      "id": "earthquakes-heat",
+      "type": "heatmap",
+      "source": "earthquakes",
+      "16xzoom": 16,
+      "paint": {
+      // Increase the heatmap weight based on frequency and property magnitude
+      "heatmap-weight": [
+      "interpolate",
+      ["linear"],
+      ["get", "BLOCK_ADDRESS"],
+      75, 5,
+      100, 0
+      ],
+      // Increase the heatmap color weight weight by zoom level
+      // heatmap-intensity is a multiplier on top of heatmap-weight
+      "heatmap-intensity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2, 0,
+      10000, 1000
+      ],
+      // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+      // Begin color ramp at 0-stop with a 0-transparancy color
+      // to create a blur-like effect.
+
+
+      "heatmap-color": [
+      "interpolate",
+      ["linear"],
+      ["heatmap-density"],
+      0, "rgba(33,102,172,0)",
+      0.2, "rgb(103,169,207)",
+      0.4, "rgb(209,229,240)",
+      0.6, "rgb(253,219,199)",
+      0.8, "rgb(239,138,98)",
+      1, "rgb(178,24,43)"
+      ],
+      // Adjust the heatmap radius by zoom level
+      "heatmap-radius": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0, 5,
+      10, 3
+      ],
+      // Transition from heatmap to circle layer by zoom level
+      "heatmap-opacity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      5, 1,
+      25, 0
+      ],
+      }
+      }, 'waterway-label');
+
+      });
+      </script>
+
+      </body>
+      </html>
